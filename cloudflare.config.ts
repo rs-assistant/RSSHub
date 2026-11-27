@@ -28,8 +28,8 @@ export default defineConfig(({ mode }) => {
             env: {
                 REQUIRE_ACCESS_KEY: bindings.text('true'),
                 DEBUG_INFO: bindings.text('false'),
-                // KV namespace for caching (auto-provisioned on first deploy)
-                CACHE: bindings.kv(),
+                // Reuse the deployed cache when its ID is supplied. Otherwise, provision it on first deploy.
+                CACHE: bindings.kv({ id: process.env.CLOUDFLARE_KV_NAMESPACE_ID || undefined }),
                 // Browser Run API for Playwright support
                 // Requires Workers Paid plan
                 BROWSER: bindings.browser(),
