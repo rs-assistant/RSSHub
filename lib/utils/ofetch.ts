@@ -7,6 +7,8 @@ import type { ZodType } from 'zod';
 import { config } from '@/config';
 import logger from '@/utils/logger';
 
+const requestOrigin = (request: string | Request) => URL.parse(typeof request === 'string' ? request : request.url)?.origin ?? '(unknown origin)';
+
 declare module 'ofetch' {
     interface FetchOptions {
         headerGeneratorOptions?: Partial<HeaderGeneratorOptions>;
@@ -74,14 +76,14 @@ const rofetch = createFetch({ fetch: (input: Parameters<typeof fetch>[0], init?:
             return;
         }
 
-        logger.warn(`Request ${request} with error ${response.status} remaining retry attempts: ${options.retry}`);
+        logger.warn(`Request to ${requestOrigin(request)} returned ${response.status}. Remaining retry attempts: ${options.retry}`);
         if (!(options.headers instanceof Headers)) {
             options.headers = new Headers(options.headers || {});
         }
         options.headers.set('x-prefer-proxy', '1');
     },
     onRequestError({ request, error }) {
-        logger.error(`Request ${request} fail: ${error.cause} ${error}`);
+        logger.error(`Request to ${requestOrigin(request)} failed: ${error.name}`);
         for (let cause: unknown = error.cause; cause instanceof Error; cause = cause.cause) {
             if (cause.message) {
                 error.message += ` (${cause.message})`;
@@ -90,7 +92,7 @@ const rofetch = createFetch({ fetch: (input: Parameters<typeof fetch>[0], init?:
     },
     onResponse({ request, response, options }) {
         if (response.redirected) {
-            logger.http(`Redirecting to ${response.url} for ${request}`);
+            logger.http(`Redirecting from ${requestOrigin(request)} to ${requestOrigin(response.url)}`);
         }
         if (options.schema && response.ok && response._data) {
             response._data = options.schema.parse(response._data);

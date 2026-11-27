@@ -49,7 +49,7 @@ const getWrappedGet = <T extends Get>(origin: T): T => {
             return origin.apply(this, args);
         }
 
-        logger.debug(`Outgoing request: ${options.method || 'GET'} ${url}`);
+        logger.debug(`Outgoing request: ${options.method || 'GET'} ${url.origin}`);
 
         options.headers ||= {};
         const headersLowerCaseKeys = new Set(Object.keys(options.headers).map((key) => key.toLowerCase()));

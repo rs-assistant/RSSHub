@@ -84,6 +84,8 @@ describe('route throws an error', () => {
 
         const text = await response.text();
         const $ = load(text);
+        expect(text).not.toContain('/thisDoesNotExist');
+        expect(text).not.toContain('/test/slow');
         $('.debug-item').each((_index, item) => {
             const key = $(item).find('.debug-key').text().trim();
             const value = $(item).find('.debug-value').html()?.trim();
@@ -94,16 +96,8 @@ describe('route throws an error', () => {
                 case 'Hot Routes:':
                     expect(value).toBe('9 /test/:id/:params?<br>');
                     break;
-                case 'Hot Paths:':
-                    expect(value).toBe(
-                        '2 /test/error<br>2 /test/slow<br>2 /test/slow4<br>1 /test/httperror<br>1 /test/config-not-found-error<br>1 /test/invalid-parameter-error<br>1 /test/captcha-error<br>1 /thisDoesNotExist<br>1 /<br>'
-                    );
-                    break;
                 case 'Hot Error Routes:':
                     expect(value).toBe('6 /test/:id/:params?<br>');
-                    break;
-                case 'Hot Error Paths:':
-                    expect(value).toBe('2 /test/error<br>1 /test/httperror<br>1 /test/slow4<br>1 /test/config-not-found-error<br>1 /test/invalid-parameter-error<br>1 /test/captcha-error<br>1 /thisDoesNotExist<br>');
                     break;
                 default:
             }

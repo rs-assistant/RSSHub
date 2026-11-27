@@ -52,6 +52,7 @@ type ConfigEnvKeys =
     | 'PAC_SCRIPT'
     // Access control
     | 'ACCESS_KEY'
+    | 'REQUIRE_ACCESS_KEY'
     // Logging
     | 'DEBUG_INFO'
     | 'LOGGER_LEVEL'
@@ -335,6 +336,7 @@ export type Config = {
     pacScript?: string;
     // access control
     accessKey?: string;
+    requireAccessKey: boolean;
     // logging
     debugInfo: string;
     loggerLevel: string;
@@ -892,6 +894,7 @@ const calculateValue = () => {
         pacScript: envs.PAC_SCRIPT,
         // access control
         accessKey: envs.ACCESS_KEY,
+        requireAccessKey: toBoolean(envs.REQUIRE_ACCESS_KEY, false),
         // logging
         // 是否显示 Debug 信息，取值 'true' 'false' 'some_string' ，取值为 'true' 时永久显示，取值为 'false' 时永远隐藏，取值为 'some_string' 时请求带上 '?debug=some_string' 显示
         debugInfo: envs.DEBUG_INFO || 'true',
