@@ -2664,6 +2664,7 @@ export type RoutePath =
   | `/openai/cookbook`
   | `/openai/developers/blog/:lang?`
   | `/openai/news`
+  | `/openai/news/company-announcements`
   | `/openai/research`
   | `/openalex/:journals/:type?/:ids?`
   | `/openrice/:lang/hongkong/explore/chart/:category`

@@ -162431,6 +162431,29 @@ export default {
         "location": "developers-blog.ts",
         "module": () => import('@/routes/openai/developers-blog.ts')
       },
+      "/news/company-announcements": {
+        "path": "/news/company-announcements",
+        "categories": [
+          "programming"
+        ],
+        "example": "/openai/news/company-announcements",
+        "radar": [
+          {
+            "source": [
+              "openai.com/news/company-announcements"
+            ],
+            "target": "/news/company-announcements"
+          }
+        ],
+        "name": "Company Announcements",
+        "maintainers": [
+          "goestav",
+          "StevenRCE0",
+          "nczitzk"
+        ],
+        "location": "company-announcements.ts",
+        "module": () => import('@/routes/openai/company-announcements.ts')
+      },
       "/news": {
         "path": "/news",
         "categories": [

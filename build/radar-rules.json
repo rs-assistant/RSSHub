@@ -60724,6 +60724,16 @@
         ],
         "target": "/openai/developers/blog/zh-Hans"
       }
+    ],
+    ".": [
+      {
+        "title": "Company Announcements",
+        "docs": "https://docs.rsshub.app/routes/openai",
+        "source": [
+          "/news/company-announcements"
+        ],
+        "target": "/openai/news/company-announcements"
+      }
     ]
   },
   "pikabu.ru": {
