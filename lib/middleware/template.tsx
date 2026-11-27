@@ -4,6 +4,7 @@ import { config } from '@/config';
 import type { Data } from '@/types';
 import cacheModule from '@/utils/cache/index';
 import { collapseWhitespace } from '@/utils/common-utils';
+import { md5 } from '@/utils/hash';
 import { Atom, json, RSS, rss3 } from '@/utils/render';
 import { parseDuration, toInstant, toISOString, toRFC822 } from '@/utils/time';
 
@@ -104,12 +105,17 @@ const middleware: MiddlewareHandler = async (ctx, next) => {
     }
 
     const currentDate = Temporal.Now.instant();
+    const feedUrl = new URL(ctx.req.url);
+    if (config.accessKey && feedUrl.searchParams.get('key') === config.accessKey) {
+        feedUrl.searchParams.delete('key');
+        feedUrl.searchParams.set('code', md5(feedUrl.pathname + config.accessKey));
+    }
     const result = {
         lastBuildDate: toRFC822(currentDate),
         updated: toISOString(currentDate),
         ttl,
-        atomlink: ctx.req.url,
         ...data,
+        atomlink: feedUrl.href,
     };
 
     if (config.isPackage) {

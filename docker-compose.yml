@@ -6,12 +6,13 @@ services:
         image: diygod/rsshub # or ghcr.io/diygod/rsshub
         restart: always
         ports:
-            - '1200:1200'
+            - '127.0.0.1:1200:1200'
         environment:
             NODE_ENV: production
+            DEBUG_INFO: 'false'
             CACHE_TYPE: redis
             REDIS_URL: 'redis://redis:6379/'
-            PLAYWRIGHT_CDP_ENDPOINT: 'ws://browserless:3000?token=${BROWSERLESS_TOKEN:-rsshub}' # marked
+            PLAYWRIGHT_CDP_ENDPOINT: 'ws://browserless:3000?token=${BROWSERLESS_TOKEN:?Set a unique Browserless token}' # marked
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:1200/healthz']
             interval: 30s
@@ -25,7 +26,7 @@ services:
         image: ghcr.io/browserless/chromium # marked
         restart: always # marked
         environment: # marked
-            TOKEN: '${BROWSERLESS_TOKEN:-rsshub}' # marked
+            TOKEN: '${BROWSERLESS_TOKEN:?Set a unique Browserless token}' # marked
         ulimits: # marked
             core: # marked
                 hard: 0 # marked

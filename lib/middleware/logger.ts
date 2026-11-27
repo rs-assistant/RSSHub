@@ -1,6 +1,7 @@
 import type { MiddlewareHandler } from 'hono';
+import { routePath } from 'hono/route';
 
-import { getPath, time } from '@/utils/helpers';
+import { time } from '@/utils/helpers';
 import logger from '@/utils/logger';
 import { requestMetric } from '@/utils/otel';
 
@@ -27,8 +28,8 @@ const colorStatus = (status: number) => {
 };
 
 const middleware: MiddlewareHandler = async (ctx, next) => {
-    const { method, raw, routePath } = ctx.req;
-    const path = getPath(raw);
+    const { method } = ctx.req;
+    const path = routePath(ctx, -1);
 
     logger.info(`${LogPrefix.Incoming} ${method} ${path}`);
 
@@ -39,7 +40,7 @@ const middleware: MiddlewareHandler = async (ctx, next) => {
     const status = ctx.res.status;
 
     logger.info(`${LogPrefix.Outgoing} ${method} ${path} ${colorStatus(status)} ${time(start)}`);
-    requestMetric.success(performance.now() - start, { path: routePath, method, status });
+    requestMetric.success(performance.now() - start, { path, method, status });
 };
 
 export default middleware;

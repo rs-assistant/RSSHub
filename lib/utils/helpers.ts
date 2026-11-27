@@ -11,12 +11,6 @@ export const getRouteNameFromPath = (path: string) => {
     return null;
 };
 
-export const getPath = (request: Request): string => {
-    // Optimized: RegExp is faster than indexOf() + slice()
-    const match = request.url.match(/^https?:\/\/[^/]+(\/[^?]*)/);
-    return match ? match[1] : '';
-};
-
 const humanize = (times: string[]) => {
     const [delimiter, separator] = [',', '.'];
     const orderTimes = times.map((v) => v.replaceAll(/(\d)(?=(\d{3})+(?!\d))/g, (_match, p1) => p1 + delimiter));

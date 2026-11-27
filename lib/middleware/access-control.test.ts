@@ -37,11 +37,23 @@ async function checkBlock(response) {
 
 afterEach(() => {
     delete process.env.ACCESS_KEY;
+    delete process.env.REQUIRE_ACCESS_KEY;
     delete process.env.TELEGRAM_SESSION;
     vi.resetModules();
 });
 
 describe('access-control', () => {
+    it('denies feeds when access is required but no key is configured', async () => {
+        delete process.env.ACCESS_KEY;
+        process.env.REQUIRE_ACCESS_KEY = 'true';
+        const app = (await import('@/app')).default;
+
+        const response = await app.request('/test/2');
+        await checkBlock(response);
+        expect(response.headers.get('Cache-Control')).toBe('private, no-store');
+        expect((await app.request('/')).status).toBe(200);
+    });
+
     it('access key', async () => {
         const key = '1L0veRSSHub';
         const code = md5('/test/2' + key);
@@ -68,9 +80,15 @@ describe('access-control', () => {
         // right key/code
         const response331 = await app.request(`/test/2?key=${key}`);
         expect(response331.status).toBe(200);
+        const ownerFeed = await response331.text();
+        expect(ownerFeed).not.toContain(key);
+        expect(ownerFeed).toContain(`/test/2?code=${code}`);
 
         const response332 = await app.request(`/test/2?code=${code}`);
         expect(response332.status).toBe(200);
+        expect(response332.headers.get('Cache-Control')).toBe('private, no-store');
+        expect(response332.headers.get('Referrer-Policy')).toBe('no-referrer');
+        await checkBlock(await app.request(`/test/1?code=${code}`));
     });
 
     it('telegram media links carry the access code of their own path, not the requester credential', async () => {

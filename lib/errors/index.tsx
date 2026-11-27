@@ -14,7 +14,7 @@ import NotFoundError from './types/not-found';
 const Sentry = config.sentry.dsn ? await import('@sentry/node') : undefined;
 
 // FetchError quotes the full request URL in its message, and some routes put the operator's API key or token
-// in the path or query of that URL, so only its origin is shown to clients (the log keeps the full URL)
+// in the path or query of that URL, so report only its origin.
 const hideRequestUrl = (error: Error, text: string) => {
     if (!(error instanceof FetchError) || !error.request) {
         return text;
@@ -39,12 +39,6 @@ export const errorHandler: ErrorHandler = (error, ctx) => {
     }
     debug.error++;
 
-    const errorPathCount = debug.errorPaths[requestPath];
-    if (!errorPathCount) {
-        debug.errorPaths[requestPath] = 0;
-    }
-    debug.errorPaths[requestPath]++;
-
     const errorRouteCount = debug.errorRoutes[matchedRoute];
     if (!errorRouteCount && hasMatchedRoute) {
         debug.errorRoutes[matchedRoute] = 0;
@@ -54,13 +48,13 @@ export const errorHandler: ErrorHandler = (error, ctx) => {
 
     if (config.honeybadger.apiKey) {
         Honeybadger.notify(error, {
-            context: { name: requestPath.split('/', 2)[1] },
+            context: { name: matchedRoute.split('/', 2)[1] },
         });
     }
 
     if (Sentry) {
         Sentry.withScope((scope) => {
-            scope.setTag('name', requestPath.split('/', 2)[1]);
+            scope.setTag('name', matchedRoute.split('/', 2)[1]);
             Sentry.captureException(error);
         });
     }
@@ -87,8 +81,8 @@ export const errorHandler: ErrorHandler = (error, ctx) => {
             ctx.status(503);
             break;
     }
-    logger.error(`Error in ${requestPath}: ${errorMessage}`);
     errorMessage = hideRequestUrl(error, errorMessage);
+    logger.error(`Error in ${matchedRoute}: ${errorMessage}`);
     requestMetric.error({ path: matchedRoute, method: ctx.req.method, status: ctx.res.status });
 
     return config.isPackage || ctx.req.query('format') === 'json'

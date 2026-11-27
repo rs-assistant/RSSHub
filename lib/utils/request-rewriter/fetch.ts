@@ -129,7 +129,8 @@ const wrappedFetch: typeof undici.fetch = async (
     const options: RequestInit = {};
     const publicOnly = !!init?.publicOnly && !config.feature.allow_user_supply_unsafe_domain;
 
-    logger.debug(`Outgoing request: ${request.method} ${request.url}`);
+    const requestOrigin = new URL(request.url).origin;
+    logger.debug(`Outgoing request: ${request.method} ${requestOrigin}`);
 
     // ua
     if (config.isDefaultUA || init?.headerGeneratorOptions) {
@@ -183,7 +184,7 @@ const wrappedFetch: typeof undici.fetch = async (
             const dispatcher = await proxy.getDispatcher(request.url, init?.minVersion, init?.ecdhCurve);
             if (dispatcher) {
                 options.dispatcher = dispatcher;
-                logger.debug(`Proxying request: ${request.url}`);
+                logger.debug(`Proxying request: ${requestOrigin}`);
             }
         }
     }
@@ -192,7 +193,7 @@ const wrappedFetch: typeof undici.fetch = async (
         options.dispatcher = getAgent(init?.minVersion, publicOnly, init?.ecdhCurve);
     }
 
-    const interceptors = [init?.allowH2 === false && http1Only, publicOnly && publicOnlyInterceptor, !!init?.credentialHeaders?.length && dropCredentialHeaders(new URL(request.url).origin, init.credentialHeaders)].filter(
+    const interceptors = [init?.allowH2 === false && http1Only, publicOnly && publicOnlyInterceptor, !!init?.credentialHeaders?.length && dropCredentialHeaders(requestOrigin, init.credentialHeaders)].filter(
         (interceptor): interceptor is Dispatcher.DispatcherComposeInterceptor => !!interceptor
     );
 

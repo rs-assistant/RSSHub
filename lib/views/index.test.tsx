@@ -26,17 +26,9 @@ describe('Index view', () => {
                 '/foo': 5,
                 '/bar': 2,
             },
-            paths: {
-                '/foo?x=1': 4,
-                '/bar?x=2': 1,
-            },
             errorRoutes: {
                 '/error': 2,
                 '/fail': 1,
-            },
-            errorPaths: {
-                '/error?x=1': 1,
-                '/fail?x=2': 1,
             },
         };
 

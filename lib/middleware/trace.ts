@@ -1,14 +1,14 @@
 import type { MiddlewareHandler } from 'hono';
+import { routePath } from 'hono/route';
 
 import { config } from '@/config';
-import { getPath } from '@/utils/helpers';
 import { tracer } from '@/utils/otel';
 
 const middleware: MiddlewareHandler = async (ctx, next) => {
-    if (config.debugInfo) {
+    if (config.debugInfo && config.debugInfo !== 'false') {
         // Only enable tracing in debug mode
-        const { method, raw } = ctx.req;
-        const path = getPath(raw);
+        const { method } = ctx.req;
+        const path = routePath(ctx, -1);
 
         const span = tracer.startSpan(`${method} ${path}`, {
             kind: 1, // server

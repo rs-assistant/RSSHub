@@ -51,7 +51,8 @@ const fetchWithSafeRedirect = async (request: Request, credentialHeaders: string
         // https://fetch.spec.whatwg.org/#http-redirect-fetch
         const target = new URL(location, url);
         headers = new Headers(headers);
-        if (target.origin !== new URL(url).origin) {
+        const origin = new URL(url).origin;
+        if (target.origin !== origin) {
             for (const header of credentialHeaders) {
                 headers.delete(header);
             }
@@ -63,7 +64,7 @@ const fetchWithSafeRedirect = async (request: Request, credentialHeaders: string
                 headers.delete(header);
             }
         }
-        logger.http(`Redirecting to ${target.href} for ${url}`);
+        logger.http(`Redirecting from ${origin} to ${target.origin}`);
         url = target.href;
     }
     throw new TypeError('Too many redirects');
@@ -73,7 +74,7 @@ const wrappedFetch = async (input: RequestInfo | URL, init?: RequestInit & { cre
     const request = new Request(input, init);
 
     const requestUrl = new URL(request.url);
-    logger.debug(`Outgoing request: ${request.method} ${requestUrl.origin}${requestUrl.pathname}`);
+    logger.debug(`Outgoing request: ${request.method} ${requestUrl.origin}`);
 
     // Set User-Agent if not provided
     if (config.isDefaultUA) {

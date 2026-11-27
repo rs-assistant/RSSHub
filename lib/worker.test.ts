@@ -7,10 +7,37 @@ import type { Unstable_DevWorker } from 'wrangler';
 import { unstable_dev } from 'wrangler';
 
 import type { NamespacesType } from '@/registry';
+import { md5 } from '@/utils/hash';
 
 type JsonFeed = {
     items: Array<{ title: string; content_html: string }>;
 };
+
+it('serves a protected RSS feed only with its path-specific code', async () => {
+    const accessKey = 'worker-test-access-key';
+    const worker = await unstable_dev('./dist-worker/worker.mjs', {
+        experimental: { disableExperimentalWarning: true },
+        local: true,
+        persist: false,
+        config: './wrangler.toml',
+        vars: { REQUIRE_ACCESS_KEY: 'true', ACCESS_KEY: accessKey, DEBUG_INFO: 'false' },
+    });
+
+    try {
+        const path = '/test/1';
+        const code = md5(path + accessKey);
+        expect((await worker.fetch(path)).status).toBe(403);
+        expect((await worker.fetch(`/test/2?code=${code}`)).status).toBe(403);
+
+        const feed = await worker.fetch(`${path}?code=${code}`);
+        expect(feed.status).toBe(200);
+        expect(feed.headers.get('Cache-Control')).toBe('private, no-store');
+        expect(await feed.text()).toContain('<rss');
+        expect(await (await worker.fetch('/')).text()).not.toContain('Debug Info');
+    } finally {
+        await worker.stop();
+    }
+}, 120000);
 
 describe('Worker Integration Tests', () => {
     let worker: Unstable_DevWorker;

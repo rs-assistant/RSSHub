@@ -19,13 +19,15 @@ export default defineConfig(({ mode }) => {
             compatibilityFlags: ['global_fetch_strictly_public', 'temporal'],
             entrypoint: 'dist-worker/worker.mjs',
             observability: {
-                enabled: true,
+                enabled: false,
             },
             exports: {
                 // Created with SQLite storage by the `browser-session-v1` Wrangler migration
                 BrowserSession: exports.durableObject({ storage: 'sqlite' }),
             },
             env: {
+                REQUIRE_ACCESS_KEY: bindings.text('true'),
+                DEBUG_INFO: bindings.text('false'),
                 // KV namespace for caching (auto-provisioned on first deploy)
                 CACHE: bindings.kv(),
                 // Browser Run API for Playwright support
@@ -38,8 +40,6 @@ export default defineConfig(({ mode }) => {
                 PLAYWRIGHT_SERVICE: isProduction && bindings.worker({ worker: 'cloudflare-patchright' }),
                 // Only use the service binding for this endpoint origin.
                 PLAYWRIGHT_SERVICE_ORIGIN: isProduction && bindings.text('https://cloudflare-patchright.rss3.workers.dev'),
-                // Environment variables can be set here with bindings.text(), for example:
-                // DEBUG_INFO: bindings.text('false'),
             },
             // For production, set sensitive values such as ACCESS_KEY or GITHUB_ACCESS_TOKEN as secrets.
             // cf cannot set a single secret yet: run `wrangler secret put <KEY> --name rsshub`,
